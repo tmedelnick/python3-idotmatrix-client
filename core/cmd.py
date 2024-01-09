@@ -17,7 +17,7 @@ from .idotmatrix.fullscreenColor import FullscreenColor
 from .idotmatrix.musicSync import MusicSync
 from .idotmatrix.scoreboard import Scoreboard
 from .idotmatrix.graffiti import Graffiti
-
+from .idotmatrix.text import Text
 
 class CMD:
     bluetooth = None
@@ -51,7 +51,7 @@ class CMD:
         # screen toggle
         parser.add_argument(
             "--togglescreen",
-            action="store_true",
+            action="store",
             help="toggles the screen on or off",
         )
         # chronograph
@@ -140,6 +140,16 @@ class CMD:
             action="store",
             help="processes the gif instead of sending it raw (useful when the size does not match). Format: <AMOUNT_PIXEL>",
         )
+        parser.add_argument(
+            "--textline1",
+            action="store",
+            help="Text line1",
+        )
+        parser.add_argument(
+            "--textline2",
+            action="store",
+            help="Text line2",
+        )
 
     async def run(self, args):
         self.logging.info("initializing command line")
@@ -161,7 +171,7 @@ class CMD:
         if args.rotate180degrees:
             await self.rotate180degrees(args.rotate180degrees)
         if args.togglescreen:
-            await self.togglescreen()
+            await self.togglescreen(args.togglescreen)
         # arguments which cannot run in parallel
         if args.test:
             await self.test()
@@ -181,6 +191,8 @@ class CMD:
             await self.image(args)
         elif args.set_gif:
             await self.gif(args)
+        elif args.textline1:
+            await self.text(args.textline1, args.textline2)
 
     async def test(self):
         """Tests all available options for the device"""
@@ -250,10 +262,15 @@ class CMD:
         else:
             await self.bluetooth.send(Common().rotate180degrees(0))
 
-    async def togglescreen(self):
+
+    async def togglescreen(self,argument):
         """toggles the screen on or off"""
         self.logging.info("toggling screen")
-        await self.bluetooth.send(Common().toggleScreenFreeze())
+
+        if argument.lower() == "true":
+            await self.bluetooth.send(Common().toggleScreenFreeze(1))
+        else:
+            await self.bluetooth.send(Common().toggleScreenFreeze(0))
 
     async def chronograph(self, argument):
         """sets the chronograph mode"""
@@ -435,3 +452,11 @@ class CMD:
                     file_path=args.set_gif,
                 )
             )
+
+    async def text(self, textline1, textline2):
+        """text test"""
+        self.logging.info("text test")
+        text = Text()
+        await self.bluetooth.send(
+            text.create_payloads(textline1, textline2)
+        )

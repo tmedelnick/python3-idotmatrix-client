@@ -7,13 +7,14 @@ class Common:
     Based on the BleProtocolN.java file of the iDotMatrix Android App.
     """
 
-    def toggleScreenFreeze(self):
+    def toggleScreenFreeze(self,on=0):
         """Freezes or unfreezes the screen.
 
         Returns:
             _type_: byte array of the command which needs to be sent to the device
         """
-        return bytearray([4, 0, 3, 0])
+
+        return bytearray([5, 0, 7, 1,int(on) % 256])
 
     def rotate180degrees(self, type=0):
         """rotates the screen 180 dregrees
